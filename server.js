@@ -4,6 +4,8 @@ const app = express();
 const axios = require('axios');
 
 const path = require('path');
+const config = require('./config')
+const { sfmc } = config;
 
 app.use(cors());
 
@@ -12,12 +14,12 @@ app.use(express.json());
 app.post('/proxy/token', async (req, res) => {
   try {
     const payload = JSON.stringify({
-      grant_type: 'client_credentials',
-      client_id: 'y2yilxnvkm55c3nyd3u2w9sz',
-      client_secret: 'V3Kc7difTRz3E1Y4Shg2n0cM'
+      grant_type: sfmc.grant_type,
+      client_id: sfmc.client_id,
+      client_secret: sfmc.client_id
     });
 
-    const response = await axios.post('https://mc2nqjmlyhcbf2cz3s0c61126mn8.auth.marketingcloudapis.com/v2/token',
+    const response = await axios.post(`${sfmc.host}/v2/token`,
       payload,
       {
         headers: { 'Content-Type': 'application/json' }
@@ -33,7 +35,7 @@ app.post('/interaction/v1/events', async (req, res) => {
   try {
     const { authorization } = req.headers;
 
-    const response = await axios.post('https://mc2nqjmlyhcbf2cz3s0c61126mn8.rest.marketingcloudapis.com/interaction/v1/events', req.body, {
+    const response = await axios.post(`${sfmc.host}/interaction/v1/events`, req.body, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization
@@ -56,4 +58,4 @@ app.get('/verification', (req, res) => {
   res.sendFile(path.join(__dirname, '/pages/verification/index.html'));
 });
 
-app.listen(3000, () => console.log('Proxy server running on http://localhost:3000'));
+app.listen(3000, () => console.log(`Proxy server running on http://${config.appHost}:3000`));
