@@ -16,10 +16,10 @@ app.post('/proxy/token', async (req, res) => {
     const payload = JSON.stringify({
       grant_type: sfmc.grant_type,
       client_id: sfmc.client_id,
-      client_secret: sfmc.client_id
+      client_secret: sfmc.client_secret
     });
 
-    const response = await axios.post(`${sfmc.host}/v2/token`,
+    const response = await axios.post(`${sfmc.host_auth}/v2/token`,
       payload,
       {
         headers: { 'Content-Type': 'application/json' }
@@ -35,7 +35,7 @@ app.post('/interaction/v1/events', async (req, res) => {
   try {
     const { authorization } = req.headers;
 
-    const response = await axios.post(`${sfmc.host}/interaction/v1/events`, req.body, {
+    const response = await axios.post(`${sfmc.host_rest}/interaction/v1/events`, req.body, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization
