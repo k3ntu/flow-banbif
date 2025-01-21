@@ -31,9 +31,9 @@
                     SubscriberKey: formData.get('email'),
                     DNI: formData.get('dni'),
                     email: formData.get('email'),
-                    Nombre: 'Pepito',
-                    Apellido: 'Astunio',
-                    Celular: '999666333',
+                    Nombre: formData.get('nombre'),
+                    Apellido: formData.get('apellidos'),
+                    Celular: formData.get('celular'),
                     isDocument1Read: 'N',
                     isDocument2Read: 'N',
                     isSend: false
@@ -83,8 +83,42 @@
             document.getElementById('popup').classList.add('hidden');
         }
 
-        function verifyUserReadFiles() {
-            console.log('verifyUserReadFiles');
+        async function verifyUserReadFiles() {
+            console.log('Iniciando verificación');
+
+            if (!token) await fetchToken();
+
+            const form = document.getElementById('popupForm');
+            const formData = new FormData(form);
+            const dni = formData.get('dni');
+
+            const response = await fetch(`/verify/user?dni=${dni}`, {
+                method: 'GET',
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (data && data.items && data.items.length > 0) {
+                closePopup();
+
+                const sendFilesButton = document.getElementById('mainButton');
+                sendFilesButton.disabled = true;
+                sendFilesButton.classList.remove('bg-blue-500');
+                sendFilesButton.classList.add('bg-gray-300');
+
+                const bioFacialButton = document.getElementById('biometricsButton');
+                bioFacialButton.disabled = false;
+                bioFacialButton.classList.remove('bg-gray-500');
+                bioFacialButton.classList.add('bg-blue-500');
+
+                alert('El usuario dio su confirmación');
+            } else {
+                alert("No se encontró registro que confirme la lectura de archivos.");
+            }
         }
     </script>
 </head>
@@ -97,7 +131,7 @@
         <button id="mainButton" onclick="openPopup()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center">
             <i class="fas fa-upload mr-2"></i> Enviar Archivos
         </button>
-        <button class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center" disabled>
+        <button id="biometricsButton" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center" disabled>
             <i class="fas fa-fingerprint mr-2"></i> Biometría Facial
         </button>
         <button class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center">
@@ -113,8 +147,11 @@
         <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-lg w-full">
             <h2 class="text-lg font-bold mb-4">Envio de archivos contractuales</h2>
             <form id="popupForm" class="flex flex-col gap-4 mb-2">
-                <input type="email" name="email" placeholder="Email" class="border rounded-lg p-2">
-                <input type="text" name="dni" placeholder="DNI" class="border rounded-lg p-2">
+                <input type="text" name="name" placeholder="Nombre" class="border rounded-lg p-2" required>
+                <input type="text" name="apellidos" placeholder="Apellidos" class="border rounded-lg p-2" required>
+                <input type="text" name="celular" placeholder="Celular" class="border rounded-lg p-2" required>
+                <input type="email" name="email" placeholder="Email" class="border rounded-lg p-2" required>
+                <input type="text" name="dni" placeholder="DNI" class="border rounded-lg p-2" required>
             </form>
             <button id="sendButton" onclick="sendData()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-2">Enviar Archivos</button>
             <p id="countdown" class="hidden text-gray-500 mb-4"></p>
