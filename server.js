@@ -58,4 +58,8 @@ app.get('/verification', (req, res) => {
   res.sendFile(path.join(__dirname, '/pages/verification/index.html'));
 });
 
+app.get('/verification/another', (req, res) => {
+  res.sendFile(path.join(__dirname, '/pages/verification/another.html'));
+});
+
 app.listen(3000, () => console.log(`Proxy server running on http://${config.appHost}:3000`));
