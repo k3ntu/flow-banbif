@@ -95,7 +95,7 @@
                 var container = document.getElementById('pdf-canvas-container');
                 var canvasHtml = '';
                 for (var i = 1; i <= totalPages; i++) {
-                    canvasHtml += '<canvas id="pdf-canvas-' + i + '"></canvas>';
+                    canvasHtml += '<canvas class="w-full lg:w-[90%]" id="pdf-canvas-' + i + '"></canvas>';
                 }
                 container.innerHTML = canvasHtml;
 
