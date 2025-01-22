@@ -1,43 +1,158 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <script>
-        function sendConfirmation() {
-            const { email, dni } = getQueryParams();
-            if (!email || !dni) {
-                alert("Faltan parámetros en la URL.");
-                return;
-            }
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.min.js"></script>
 
-            const payload = {
-                email,
-                dni,
-                files: files.map(file => ({ name: file.name, status: file.status }))
-            };
-
-            console.log("Enviando confirmación:", payload);
-            alert("Confirmación enviada correctamente.");
+    <style type="text/css">
+        body {
+            background-color: #535759;
         }
 
-        window.onload = renderFiles;
-    </script>
+        #pdf-canvas-container canvas {
+            margin: 20px auto;
+            display: block;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
-<body class="w-full bg-gray-100 flex items-center justify-center min-h-screen mx-auto">
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen w-full mx-auto">
     <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-3xl w-full">
-        <h2 class="text-lg font-bold mb-4">Verificación de Documentos</h2>
+        <form id="form" action="https://cloud.marketingsoftmedia.com/service_banbif_document" method="post">
+            <div>
+                <h2 class="text-lg font-bold mb-4">Verificación de Documentos</h2>
+                <input type="hidden" name="dni" value="%%=v(@DNI)=%%">
+                <input type="hidden" name="code" value="%%=v(@code)=%%">
+                <input type="hidden" name="number_document" value="1">
 
-        <iframe src="/pdf/contract-2.pdf" class="w-full h-[500px]"></iframe>
-        <div class="mt-4">
-            <input type="checkbox" id="acceptTerms" class="mr-2">
-            <label for="acceptTerms">Acepta los términos y condiciones del documento</label>
-        </div>
+            </div>
+            <div
+                id="pdf-scroll-container"
+                class="border border-gray-300 p-3 rounded-md h-[500px] lg:h-[700px] overflow-y-auto mb-5 bg-gray-200"
+            >
+                <div id="pdf-canvas-container"></div>
+            </div>
 
-        <button id="confirmButton" class="mt-4 bg-blue-500 text-white py-2 px-4 rounded disabled:opacity-50" disabled onclick="sendConfirmation()">Enviar confirmación</button>
+            <a
+                id="downloadPdfBtn"
+                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded inline-block"
+                href="#"
+                download="Contrato"
+            >
+                <i class="fa-solid fa-download mr-2"></i> Descargar Contrato
+            </a>
+            <div id="termsContainer">
+                <div class="mt-4">
+                    <input type="checkbox" id="acceptTerms" class="mr-2">
+                    <label for="acceptTerms">Acepta los términos y condiciones del documento</label>
+                </div>
+                <div>
+                    <button id="buttonConfirm" type="submit"
+                        class="mt-4 bg-gray-500 text-white py-2 px-4 rounded disabled:opacity-50"
+                        disabled>Confirmar</button>
+                </div>
+            </div>
+        </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var url = "/pdf/contract-2.pdf";
+
+            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js";
+
+            var pdfDoc = null;
+            var scale = 1.0;
+
+            function renderPage(num, canvas) {
+                var ctx = canvas.getContext('2d');
+
+                pdfDoc.getPage(num).then(function (page) {
+                    var viewport = page.getViewport({ scale: scale });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    var renderContext = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+                    return renderTask.promise;
+                });
+            }
+
+            pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
+                pdfDoc = pdfDoc_;
+                var totalPages = pdfDoc.numPages;
+
+                var container = document.getElementById('pdf-canvas-container');
+                var canvasHtml = '';
+                for (var i = 1; i <= totalPages; i++) {
+                    canvasHtml += '<canvas id="pdf-canvas-' + i + '"></canvas>';
+                }
+                container.innerHTML = canvasHtml;
+
+                for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+                    var canvas = document.getElementById('pdf-canvas-' + pageNumber);
+                    renderPage(pageNumber, canvas);
+                }
+
+                const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+                if (downloadPdfBtn) {
+                    downloadPdfBtn.href = url; 
+                }
+            }).catch(function (error) {
+                console.error("Error al cargar el PDF: ", error);
+            });
+        })
+    </script>
+
+    <script>
+        let isAccept = false;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const termsContainer = document.getElementById('termsContainer');
+
+            if (isAccept === true || isAccept === 'true') {
+                if (termsContainer) {
+                    termsContainer.innerHTML = '<p class="mt-4 text-green-500 text-lg font-bold">Documento aceptado</p>';
+                }
+            } else {
+                const checkbox = document.getElementById('acceptTerms');
+                const acceptButton = document.getElementById('buttonConfirm');
+
+                if (!checkbox) {
+                    console.error("El elemento con id 'acceptTerms' no se encontró.");
+                    return;
+                }
+                if (!acceptButton) {
+                    console.error("El elemento con id 'buttonConfirm' no se encontró.");
+                    return;
+                }
+
+                checkbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        acceptButton.disabled = false;
+                        acceptButton.classList.remove('bg-gray-500');
+                        acceptButton.classList.add('bg-blue-500');
+                    } else {
+                        acceptButton.disabled = true;
+                        acceptButton.classList.remove('bg-blue-500');
+                        acceptButton.classList.add('bg-gray-500');
+                    }
+                });
+            }
+        });
+    </script>
+
+
 </body>
+
 </html>
