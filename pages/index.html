@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script>
         let token = null;
+        let attemptSends = 1;
 
         async function fetchToken() {
             const response = await fetch('/proxy/token', {
@@ -24,6 +25,8 @@
             const form = document.getElementById('popupForm');
             const formData = new FormData(form);
 
+            const generateRequestNumber = `${formData.get('requestNumber')}-${attemptSends}`;
+
             const payload = {
                 ContactKey: formData.get('email'),
                 EventDefinitionKey: "APIEvent-52fce315-0dfb-399a-5630-a389ae567ca3",
@@ -36,6 +39,7 @@
                     Celular: formData.get('celular'),
                     isDocument1Read: 'N',
                     isDocument2Read: 'N',
+                    requestNumber: generateRequestNumber,
                     isSend: false
                 }
             };
@@ -47,6 +51,10 @@
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
+            }).then((response) => {
+                attemptSends += 1;
+            }).catch((e) => {
+                console.error(e);
             });
 
             alert("El email ha sido enviado exitosamente.");
@@ -152,6 +160,7 @@
                 <input type="text" name="celular" placeholder="Celular" class="border rounded-lg p-2" required>
                 <input type="email" name="email" placeholder="Email" class="border rounded-lg p-2" required>
                 <input type="text" name="dni" placeholder="DNI" class="border rounded-lg p-2" required>
+                <input type="text" name="requestNumber" placeholder="Codigo de envio" class="border rounded-lg p-2">
             </form>
             <button id="sendButton" onclick="sendData()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-2">Enviar Archivos</button>
             <p id="countdown" class="hidden text-gray-500 mb-4"></p>
