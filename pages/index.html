@@ -10,6 +10,20 @@
         let token = null;
         let attemptSends = 1;
 
+        async function activateSendFiles () {
+            let bioFacialButton = document.getElementById('biometricsButton');
+            bioFacialButton.disabled = true;
+            bioFacialButton.classList.remove('bg-blue-500');
+            bioFacialButton.classList.add('bg-gray-300');
+
+            const sendFilesButton = document.getElementById('mainButton');
+            sendFilesButton.disabled = false;
+            sendFilesButton.classList.remove('bg-gray-500');
+            sendFilesButton.classList.add('bg-blue-500');
+
+            alert("Se inicio flujo de envio de emails.");
+        }
+
         async function fetchToken() {
             const response = await fetch('/proxy/token', {
                 method: 'POST',
@@ -113,15 +127,10 @@
             if (data && data.items && data.items.length > 0) {
                 closePopup();
 
-                const sendFilesButton = document.getElementById('mainButton');
-                sendFilesButton.disabled = true;
-                sendFilesButton.classList.remove('bg-blue-500');
-                sendFilesButton.classList.add('bg-gray-300');
-
                 const bioFacialButton = document.getElementById('biometricsButton');
-                bioFacialButton.disabled = false;
-                bioFacialButton.classList.remove('bg-gray-500');
-                bioFacialButton.classList.add('bg-blue-500');
+                bioFacialButton.disabled = true;
+                bioFacialButton.classList.remove('bg-blue-500');
+                bioFacialButton.classList.add('bg-gray-300');
 
                 alert('El usuario dio su confirmación');
             } else {
@@ -136,10 +145,10 @@
         <img src="img/pva-img.png" alt="Biometric options" class="mx-auto mb-6" />
 
         <!-- Buttons -->
-        <button id="mainButton" onclick="openPopup()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center">
+        <button id="mainButton" onclick="openPopup()" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center" disabled>
             <i class="fas fa-upload mr-2"></i> Enviar Archivos
         </button>
-        <button id="biometricsButton" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center" disabled>
+        <button id="biometricsButton" onclick="activateSendFiles()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center">
             <i class="fas fa-fingerprint mr-2"></i> Biometría Facial
         </button>
         <button class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-full mb-4 flex items-center justify-center">
