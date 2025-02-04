@@ -39,8 +39,6 @@
             const form = document.getElementById('popupForm');
             const formData = new FormData(form);
 
-            const generateRequestNumber = `${formData.get('requestNumber')}-${attemptSends}`;
-
             const payload = {
                 ContactKey: formData.get('email'),
                 EventDefinitionKey: "APIEvent-52fce315-0dfb-399a-5630-a389ae567ca3",
@@ -53,7 +51,7 @@
                     Celular: formData.get('celular'),
                     isDocument1Read: 'N',
                     isDocument2Read: 'N',
-                    requestNumber: generateRequestNumber,
+                    requestNumber: formData.get('requestNumber'),
                     isSend: false
                 }
             };
