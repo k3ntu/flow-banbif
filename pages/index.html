@@ -111,8 +111,9 @@
             const form = document.getElementById('popupForm');
             const formData = new FormData(form);
             const dni = formData.get('dni');
+            const requestNumber = formData.get('requestNumber');
 
-            const response = await fetch(`/verify/user?dni=${dni}`, {
+            const response = await fetch(`/verify/user?dni=${dni}&requestNumber=${requestNumber}`, {
                 method: 'GET',
                 headers: {
                 'Content-Type': 'application/json',

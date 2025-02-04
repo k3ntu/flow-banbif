@@ -49,12 +49,12 @@ app.post('/interaction/v1/events', async (req, res) => {
 
 app.get('/verify/user', async (req, res) => {
   try {
-    const { dni } = req.query;
-    if (!dni) {
+    const { dni, requestNumber } = req.query;
+    if (!dni && !requestNumber) {
       return res.status(400).json({ message: 'El parámetro dni es requerido.' });
     }
 
-    const filter = `DNI eq '${dni}' and isDocument1Read eq 'Y' and isDocument2Read eq 'Y'`;
+    const filter = `DNI eq '${dni}' and isDocument1Read eq 'Y' and isDocument2Read eq 'Y' and isValid eq 'Y' and requestNumber eq '${requestNumber}'`;
     const encodedFilter = encodeURIComponent(filter);
 
     const url = `${sfmc.host_rest}/data/v1/customobjectdata/key/9214E16C-A065-48C0-B6F2-9B73C640B098/rowset?$filter=${encodedFilter}`;
